@@ -112,3 +112,69 @@ Ta thực thi Procedure store ta mới tạo ở trên qua câu lệnh :
 exec pro_UpdateSinhVien 1, 'Le Quang Phong', ' Math', '2001', 'Ha Nam'
 ```
 Như vậy sinh viên có maSv là 1 sẽ được thay đổi với các thông tin như trên.
+
+
+## Try - Catch trong SQL
+### Triển khai xử lý lỗi 
+Trong quá trình phát triển phần mềm, một trong những điều quan trọng là cần quan tâm tới việc xử lý lỗi. Bằng một số cách, người dùng phải quan tâm tới việc xử lý các lỗi ngoại lệ khi thiết kết database. Các cơ chế xử lý khác nhau có thể được sử dụng.
+- Khi thực thi các câu lệnh DML như INSERT,DELETE,UPDATe, người dùng có thể xử lý lỗi để đảm bảo chính xác đầu ra
+- Khi transaction thất bại và user phải roll back transaction, một thông báo lỗi phù hợp cần được hiển thị cho người dùng.
+- Khi làm việc với con trỏ trong SQL Server, người dùng có thể xử lý lỗi để đảm bảo chính xác kết quả.
+
+### Khối lệnh try catch
+> Khối lệnh TRY … CATCH được sử dụng để triển khai xử lý lỗi ngoại lệ trong Transact SQL. Một hoặc nhiều caual ệnh T-SQl sẽ được bao bởi khối TR. Nếu một lỗi xuất hiện trong khối TRY, luồng điều khiển sẽ chuyển qua khối catch, bên trong khối CATCH có thể bao gồm 1 hoặc nhiều câu lệnh.
+[ảnh try catch](https://web888.vn/wp-content/uploads/2022/06/Screenshot_6-4.jpg)
+```
+BEGIN TRY
+{sql_statement | statement_block}
+END TRY
+BEGIN CATCH
+[ {sql_statement | statement_block}]
+END CATCH
+[;]
+```
+#### Ví dụ :
+```
+begin try
+	insert into SinhVien values(9,'Hoang Xuan Nam',' aGeo',1999,'Ha Noi')
+	print N' Insert thành công'
+end try
+begin catch
+	print N'Insert thất bại, error ở dòng : ' + convert(nvarchar(3), error_line()) + N', Nội dung lỗi : '  + error_message()
+end catch
+```
+
+#### Thông tin lỗi :
+Danh sách các hàm hệ thống cung cấp thông tin lỗi:
+- ERROR_NUMBER() : trả về số lỗi.
+- ERROR_SERVERITY() : trả về mức độ nghiêm trọng
+- ERROR_STATE(): trả về số trạng thái của lỗi.
+- ERROR_PROCEDURE(): trả về tên cảu trigger hoặc stored procedure gây ra lỗi.
+- ERROR_LINE(): trả về số dòng gây ra lỗi
+- ERROR_MESSAGE(): trả về văn bản hooàn thiện của lỗi, văn bản sẽ chưa các giá trị được cung cấp làm tham số như object names, độ dài.
+
+### Sử dụng Transaction
+> Lệnh COMMIT trong SQL: Khi một Transaction hoàn chỉnh được hoàn thành thì lệnh COMMIT phải được gọi ra. Lệnh này sẽ giúp lưu những thay đổi tới cở sở dữ liệu
+#### Lệnh ROLLBACK trong SQL
+> Lệnh ROLLBACK trong SQL: là lệnh điều khiển Transaction được sử dụng để trao trả Transaction về trạng thái trước khi có các thay đổi mà chưa được lưu tới Database. Lệnh ROLLBACK chỉ có thể được sử dụng để undo các Transaction trước khi xác nhận bằng lệnh Commit hay Rollback cuối cùng.
+#### Ví dụ : 
+```
+begin try
+begin tran insert_tran
+	insert into SinhVien values(10,'Vuong Quyen', ' Geo',1999,'Ha Noi')
+	insert into SinhVien values(11,'Vuong Nam', ' Matha',1999,'Ha Noi')
+	insert into SinhVien values(12,'Vuong Hau', ' Geo',1999,'Ha Noi')
+	print N' Insert thành công'
+commit tran insert_tran
+end try
+begin catch
+	print N'Insert thất bại, error ở dòng : ' + convert(nvarchar(3), error_line()) + N', Nội dung lỗi : '  + error_message()
+	rollback tran insert_tran
+end catch
+```
+Ở đoạn lệnh trên, nếu không sử dụng transaction thì khi ta insert dòng 1 thành công, dòng 2 lỗi, dòng 3 thành công thì dòng 1 vẫn có thể insert thành công được ví sau khi insert dòng 1 thành công -> dòng 2 lỗi thì nhảy xuống CATCH. Việc sử dụng transaction giúp khi một dòng bất kỳ bị lỗi -> xuống catch thì sẽ rollback lại bằng câu lệnh : 
+```
+rollback tran insert_tran
+```	
+![image](https://user-images.githubusercontent.com/92925089/191565797-90af985b-7945-49ec-82d6-f5738ada8916.png)
+
