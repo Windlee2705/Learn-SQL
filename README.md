@@ -178,3 +178,29 @@ rollback tran insert_tran
 ```	
 ![image](https://user-images.githubusercontent.com/92925089/191565797-90af985b-7945-49ec-82d6-f5738ada8916.png)
 
+## Tạo View trong SQL
+> Trong SQL Server, View là đoạn lệnh truy vấn đã được viết sẵn và lưu bên trong cơ sở dữ liệu. Một View thì bao gồm 1 câu lệnh SELECT và khi bạn chạy View thì bạn sẽ thấy kết quả giống như khi bạn mở 1 Table. Các bạn có thể tưởng tượng nó giống như một Table ảo. Bởi vì nó có thể tổng hợp dữ liệu từ nhiều Table để tạo thành 1 Table ảo.
+View rất hữu dụng khi bạn muốn cho nhiều người người truy cập ở các permission khác nhau. Cụ thể là:
+- Hạn chế truy cập tới các Table cụ thể. Chỉ cho phép được xem qua View.
+- Hạn chế truy cập vào vào Column của Table. Khi truy cập thông qua View bạn không thể biết được tên Column mà View đó truy cập vào.
+- Liên kết các Column từ rất nhiều Table vào thành Table mới được thể hiện qua View.
+- Trình bày các thông tin tổng hợp(VD: sử dụng funtion như COUNT, SUM, ...)
+#### Cú pháp:
+```
+CREATE VIEW ViewName AS
+SELECT ...
+```
+#### Ví dụ : 
+```
+-- Tạo View
+create view ThongTinSinhVien
+as 
+	select sv.maSv, sv.hoTenSv, sv.maKhoa, k.tenKhoa, k.dienThoai as N'Điện thoại khoa'
+	from SinhVien sv join Khoa k
+	on sv.maKhoa = k.maKhoa
+
+-- Sử dụng View
+select svView.* from ThongTinSinhVien svView
+```
+![image](https://user-images.githubusercontent.com/92925089/191568112-668aa768-9549-4ded-8d8f-01347af89d7d.png)
+
