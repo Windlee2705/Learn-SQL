@@ -204,3 +204,114 @@ select svView.* from ThongTinSinhVien svView
 ```
 ![image](https://user-images.githubusercontent.com/92925089/191568112-668aa768-9549-4ded-8d8f-01347af89d7d.png)
 
+## Cursor trong SQL
+> Trong các truy vấn T-SQL, như tại các Stored Procedure, ta có thể sử dụng các con trỏ CURSOR để duyệt qua dữ liệu. Ta hiểu CURSOR là một tập hợp kết quả truy vấn (các hàng), với CURSOR ta có thể duyệt qua từng hàng kết quả để thi hành những tác vụ phức tạp. Ở một thời điểm, CURSOR có thể truy cập bởi một con trỏ đến một hàng của nó, bạn chỉ thể dịch chuyển con trỏ từ dòng này sang dòng khác.
+#### Để sử dụng con trỏ trong các Procedure, cần thực hiện theo các bước:
+Bước 1: khai báo con trỏ, trỏ đến một tập dữ liệu (kết quả của Select) bằng lệnh DECLARE
+Ví dụ có một tập dữ liệu từ câu lệnh Select như sau:
+```
+SELECT id,name FROM Product
+```
+Ta khai báo một con trỏ đặt tên là cursorProduct thì sẽ viết như sau:
+```
+DECLARE cursorProduct CURSOR FOR
+SELECT id, title FROM Product
+```
+Bước 2: Khi bắt đầu quá trình đọc các dòng dữ liệu từ Cursor trên, thì phải mở con trỏ, thực hiện như sau:
+```
+Open cursorProduct
+```
+Khi Cursor được mở, con trỏ sẽ trỏ tới dòng đầu tiên của tập dữ liệu, lúc này có thể đọc nội dung dòng đó bằng lệnh FETCH
+Bước 3: Đọc dữ liệu sử dụng lệnh như sau:
+```
+FETCH NEXT FROM cursorProduct INTO @id, @title
+```
+Lệnh trên sẽ đọc nội dung dòng hiện tại, lưu vào biến @id và @title (vì dữ liệu trong Cursor này có 2 cột). Nếu đọc thành công thì dịch chuyển con trỏ tới dòng tiếp theo
+Để kiệm tra việc FETCH thành công thì kiểm tra điều kiện @@FETCH_STATUS = 0
+Kết hợp những điều trên lại, để đọc từng dòng từ đầu đến cuối sẽ làm như sau:
+```
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    PRINT 'ID:' + CAST(@id as nvarchar)
+    PRINT 'TITLE:' @title
+
+    FETCH NEXT FROM cursorProduct INTO @it, @title
+END
+```
+Bước 4: sau khi không còn dùng đến Cursor, cần đóng lại và giải phóng các tài nguyên nó chiếm giữ
+```
+CLOSE cursorProduct
+DEALLOCATE cursorProduct
+```
+### Tóm tắt lại các câu lệnh với Cursor : 
+```
+--Khai báo biến @id, @title để lưu nội dung đọc
+DECLARE @id int
+DECLARE @title nvarchar(200)
+
+
+DECLARE cursorProduct CURSOR FOR  -- khai báo con trỏ cursorProduct
+SELECT id, title FROM Product     -- dữ liệu trỏ tới
+
+OPEN cursorProduct                -- Mở con trỏ
+
+FETCH NEXT FROM cursorProduct     -- Đọc dòng đầu tiên
+      INTO @id, @title
+
+WHILE @@FETCH_STATUS = 0          --vòng lặp WHILE khi đọc Cursor thành công
+BEGIN
+                                  --In kết quả hoặc thực hiện bất kỳ truy vấn
+                                  --nào dựa trên kết quả đọc được
+    PRINT 'ID:' + CAST(@id as nvarchar)
+    PRINT 'TITLE:' @title
+
+    FETCH NEXT FROM cursorProduct -- Đọc dòng tiếp
+          INTO @id, @title
+END
+
+CLOSE cursorProduct              -- Đóng Cursor
+DEALLOCATE cursorProduct         -- Giải phóng tài nguyên
+```
+
+#### Ví dụ : 
+```
+declare @maSv int
+
+declare cursorXepLoai cursor for 
+select maSv from ThongTinHuongDan
+
+open cursorXepLoai
+
+fetch next from cursorXepLoai into @maSv
+
+while @@FETCH_STATUS = 0
+begin
+	declare @xepLoai char(20), @ketQua decimal(5,2)
+		
+		-- Lấy kết quả từ view ThôngTinHuongDan
+		select @ketQua = ketQua
+		from ThongTinHuongDan
+		where @maSv = maSv
+		
+		-- 
+		if @ketQua >= 8
+			set @xepLoai = 'Gioi'
+		else if @ketQua >= 5 and @ketQua < 8
+			set @xepLoai = 'Kha'
+		else set @xepLoai = 'Trung Binh'
+
+		-- Update xep loai
+		update ThongTinHuongDan
+		set xepLoai  = @xepLoai
+		where maSv = @maSv
+
+	fetch next from cursorXepLoai into @maSv
+end
+
+close cursorXepLoai
+deallocate cursorXepLoai
+```
+Khi thực hiện câu lệnh trên, ta sẽ update xếp loại của view ThongTinHuongDan như sau : 
+![image](https://user-images.githubusercontent.com/92925089/191795256-f5881cd0-b099-4cf4-9fe4-c3bee79275c6.png)
+
+
