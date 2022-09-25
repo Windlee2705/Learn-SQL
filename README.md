@@ -314,4 +314,27 @@ deallocate cursorXepLoai
 Khi thực hiện câu lệnh trên, ta sẽ update xếp loại của view ThongTinHuongDan như sau : 
 ![image](https://user-images.githubusercontent.com/92925089/191795256-f5881cd0-b099-4cf4-9fe4-c3bee79275c6.png)
 
+## With - as trong SQL
+![image](https://user-images.githubusercontent.com/92925089/192136020-7f253833-6a80-453c-9d5e-7fb7a337422d.png)
 
+```
+WITH ten_alias AS (lenh_truy_van_con)  
+SELECT danh_sach_cot FROM  ten_alias [ten_bang]  
+[WHERE dieu_kien_join]  
+```
+> With sẽ lưu một số cột được chỉ định vào trong một bảng tạm. Mệnh đề được sử dụng để xác định một quan hệ tạm thời sao cho đầu ra của quan hệ tạm thời này có sẵn và được sử dụng bởi truy vấn được liên kết với mệnh đề WITH.
+> AS trong SQL được sử dụng để gán tạm thời một tên mới cho một cột trong bảng. Việc này giúp biểu diễn các kết quả truy vấn và cho phép lập trình viên gán nhãn cho các kết quả một cách thích hợp, mà không thay tên các cột trong bảng vĩnh viễn.
+#### Ví dụ : Từ bảng Product detail extended trong csdl NorthWind, lấy ra những mặt hàng có đơn giá trung bình lớn hơn trung bình của tất cả các đơn giá trong database
+```
+with PriceTrungBinhTungMatHang as (
+	select ProductID, ProductName, avg(ExtendedPrice) as trungbinh from dbo.[Order Details Extended] 
+	group by ProductID, ProductName
+),
+	PriceTrungBinhAll as (
+	select avg(ExtendedPrice) as trungBinhAll from dbo.[Order Details Extended]
+)
+
+select PriceTrungBinhTungMatHang.* from PriceTrungBinhTungMatHang,PriceTrungBinhAll 
+where PriceTrungBinhTungMatHang.trungbinh > PriceTrungBinhAll.trungBinhAll
+```
+Ở đoạn code trên, ta sử dụng mệnh đề with để tạo ra 2 bảng tạm là PriceTrungBinhTungMatHang và PriceTrungBinhAll.
