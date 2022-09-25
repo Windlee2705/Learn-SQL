@@ -338,3 +338,96 @@ select PriceTrungBinhTungMatHang.* from PriceTrungBinhTungMatHang,PriceTrungBinh
 where PriceTrungBinhTungMatHang.trungbinh > PriceTrungBinhAll.trungBinhAll
 ```
 Ở đoạn code trên, ta sử dụng mệnh đề with để tạo ra 2 bảng tạm là PriceTrungBinhTungMatHang và PriceTrungBinhAll.
+
+## Function trong SQL
+> Function (Hàm) là một đối tượng trong cơ sở dữ liệu bao gồm một tập nhiều câu lệnh được nhóm lại với nhau và được tạo ra với mục đích sử dụng lại. Trong SQL Server, hàm được lưu trữ và bạn có thể truyền các tham số vào cũng như trả về các giá trị.
+### Cú pháp tạo function
+Để tạo một function trong SQL Server, ta sử dụng cú pháp như dưới đây:
+```
+CREATE FUNCTION [schema_name.]function_name
+( [ @parameter [ AS ] [type_schema_name.] datatype
+[ = default ] [ READONLY ]
+, @parameter [ AS ] [type_schema_name.] datatype
+[ = default ] [ READONLY ] ]
+)
+
+RETURNS return_datatype
+
+[ WITH { ENCRYPTION
+| SCHEMABINDING
+| RETURNS NULL ON NULL INPUT
+| CALLED ON NULL INPUT
+| EXECUTE AS Clause ]
+
+[ AS ]
+
+BEGIN
+
+[declaration_section]
+
+executable_section
+
+RETURN return_value
+
+END;
+```
+Trong đó, các tham số : 
+- schema_name: Tên schema (lược đồ) sở hữu function.
+- function_name: Tên gán cho function.
+- @parameter: Một hay nhiều tham số được truyền vào hàm.
+- type_schema_name: Kiểu dữ liệu của schema (nếu có).
+- Datatype: Kiểu dữ liệu cho @parameter.
+- Default: Giá trị mặc định gán cho @parameter.
+- READONLY: @parameter không thể bị function ghi đè lên.
+- return_datatype: Kiểu dữ liệu của giá trị trả về.
+- ENCRYPTION: Mã nguồn (source) của function sẽ không được lưu trữ dưới dạng text trong hệ thống.
+- SCHEMABINDING: Đảm bảo các đối tượng không bị chỉnh sửa gây ảnh hưởng đến function.
+- RETURNS NULL ON NULL INPUT: Hàm sẽ trả về NULL nếu bất cứ parameter nào là NULL.
+- CALL ON NULL INPUT: Hàm sẽ thực thi cho dù bao gồm tham số là NULL.
+- EXECUTE AS clause: Xác định ngữ cảnh bảo mật để thực thi hàm.
+- return_value: Giá trị được trả về.
+
+#### Ví dụ : trong table HuongDan trong csdl ThucTap, t muốn xem sinh viên đó xếp loại gì, trước đây ta dùng con trỏ để duyệt qua từng hàng trong bảng, bây giờ với function ta cũng có thể set sinh viên đó xếp loại gì : 
+```
+create function funcXepLoai( 
+@hd_ketQua as decimal(5,2)
+)
+returns char(50)
+
+as begin 
+
+declare @hd_xepLoai char(50);
+
+if @hd_ketQua is null
+	return 'Chua co ket qua'
+
+if @hd_ketQua >= 8
+	set @hd_xepLoai = 'Gioi'
+else if @hd_ketQua >=5 and @hd_ketQua<8
+	set @hd_xepLoai = 'Kha'
+else set @hd_xepLoai = 'Trung Binh'
+
+return @hd_xepLoai
+
+end
+```
+Sau khi khai báo function funcXepLoai như bên trên, function này nhận vào 1 tham số là hd_ketQua với kiểu dữ liệu decimal(5,2) và trả về kiểu dữ liệu char(50) để xếp loại sinh viên. Khi sử dụng function đó, ta thực hiện câu lệnh : 
+```
+select hd.*, dbo.funcXepLoai(hd.ketQua) as test  from dbo.HuongDan hd
+```
+Sau đó, ta sẽ thu được kết quả như sau : 
+![image](https://user-images.githubusercontent.com/92925089/192147245-61e641ec-90f5-4b08-b10b-fe64fe7a14f5.png)
+
+### Drop Function (Xóa bỏ function)
+> Một khi đã tạo thành công các function thì cũng sẽ có những trường hợp bạn muốn xóa bỏ function khỏi cơ sở dữ liệu vì một vài lý do.
+#### Cú pháp : 
+```
+DROP FUNCTION function_name;
+```
+#### Ví dụ : 
+```
+DROP FUNCTION funcXepLoai;
+```
+Sử dụng câu lệnh này, ta sẽ xóa bỏ function có tên là funcXepLoai ra khỏi database
+
+
