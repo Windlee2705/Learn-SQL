@@ -430,4 +430,67 @@ DROP FUNCTION funcXepLoai;
 ```
 Sử dụng câu lệnh này, ta sẽ xóa bỏ function có tên là funcXepLoai ra khỏi database
 
+## Case
+> Câu lệnh CASE dùng để thiết lập điều kiện rẽ nhánh trong SQL Server, tương tự chức năng của câu lệnh IF-THEN-ELSE.
+Case có 2 định dạng : 
+- Hàm CASE đơn giản hay còn gọi là Simple CASE.
+- Hàm CASE tìm kiếm hay còn gọi là Searched CASE.
+> Trong đó :
+- Simple CASE là so sánh một biểu thức với một bộ các biểu thức đơn giản để xác định kết quả.
+- Searched CASE là đánh giá một bộ các biểu thức Boolean để xác định kết quả.
+- Cả 2 định dạng trên đều hỗ trợ đối số ELSE (nhưng không bắt buộc).
+### Cú pháp : 
+```
+CASE bieuthuc_dauvao
+WHEN bieuthuc_1 THEN ketqua_1
+WHEN bieuthuc_2 THEN ketqua_2
+...
+WHEN bieuthuc_n THEN ketqua_n
+ELSE ketqua_khac
+END
 
+// Hoặc Searched CASE
+
+CASE
+WHEN dieukien_1 THEN ketqua_1
+WHEN dieukien_2 THEN ketqua_2
+...
+WHEN dieukien_n THEN ketqua_n
+ELSE ketqua_khac
+END
+```
+#### Ví dụ : 
+Simple Case : 
+```
+SELECT tenchuyenmuc, Code
+(CASE code
+WHEN 01 THEN 'Laptrinh-Quantrimang.com'
+WHEN 02 THEN 'Congnghe-Quantrimang.com'
+WHEN 03 THEN 'Cuocsong-Quantrimang.com'
+ELSE 'Khoahoc-Quantrimang.com'
+END) AS Chuyenmuc
+FROM chuyenmuc
+ORDER BY Code
+```
+![image](https://user-images.githubusercontent.com/92925089/194116275-8eb377b3-605d-4d89-a300-20301fb97b41.png)
+
+Searched CASE : 
+```
+SELECT tenchuyenmuc,
+CASE
+WHEN code = 01 THEN 'Laptrinh-Quantrimang.com'
+WHEN code = 02 THEN 'Congnghe-Quantrimang.com'
+WHEN code = 03 THEN 'Cuocsong-Quantrimang.com'
+ELSE 'Khoahoc-Quantrimang.com'
+END
+FROM chuyenmuc;
+```
+So sánh 2 điều kiện : 
+```
+SELECT
+CASE
+WHEN code < 2 THEN 'Laptrinh-Quantrimang.com'
+WHEN code = 2 THEN 'Congnghe-Quantrimang.com'
+END
+FROM chuyenmuc;
+```
