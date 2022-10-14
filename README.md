@@ -494,3 +494,66 @@ WHEN code = 2 THEN 'Congnghe-Quantrimang.com'
 END
 FROM chuyenmuc;
 ```
+
+## Các hàm Ranking trong SQL Server
+> Các hàm Ranking cho phép bạn có thể đánh số liên tục (xếp loại) cho các tập hợp kết quả. Các hàm này có thể được sử dụng để cung cấp số thứ tự trong hệ thống đánh số tuần tự khác nhau. Có thể hiểu đơn giản như sau: bạn có từng con số nằm trên từng dòng liên tục, tại dòng thứ nhất xếp loại số 1, dòng thứ 2 xếp loại số là 2… Bạn có thể sử dụng hàm ranking theo các nhóm số tuần tự, mỗi một nhóm sẽ được đánh số theo lược đồ 1,2,3 và nhóm tiếp theo lại bắt đầu bằng 1,2,3…
+### Dữ liệu chạy thử cho các ví dụ : 
+```
+SET NOCOUNT ON
+CREATE TABLE Person(
+FirstName VARCHAR(10),
+Age INT,
+Gender CHAR(1))
+INSERT INTO Person VALUES ('Ted',23,'M')
+INSERT INTO Person VALUES ('John',40,'M')
+INSERT INTO Person VALUES ('George',6,'M')
+INSERT INTO Person VALUES ('Mary',11,'F')
+INSERT INTO Person VALUES ('Sam',17,'M')
+INSERT INTO Person VALUES ('Doris',6,'F')
+INSERT INTO Person VALUES ('Frank',38,'M')
+INSERT INTO Person VALUES ('Larry',5,'M')
+INSERT INTO Person VALUES ('Sue',29,'F')
+INSERT INTO Person VALUES ('Sherry',11,'F')
+INSERT INTO Person VALUES ('Marty',23,'F')
+```
+
+### Hàm Row_Number
+> Hàm đầu tiên tôi muốn nói tới là ROW_NUMBER. Hàm này trả lại một dãy số tuần tự bắt đầu từ 1 cho mỗi dòng hay nhóm trong tập hợp kết quả. Hàm ROW_NUMBER sẽ có cú pháp sau:
+```
+ROW_NUMBER ( ) OVER ( [ ] )
+```
+#### Ví dụ :
+Ví dụ dưới sẽ đánh số liên tục cho tất cả các dòng trong bảng Person và sắp xếp chúng theo trường Age
+```
+SELECT ROW_NUMBER() OVER (ORDER BY Age) AS [Row Number by Age],
+FirstName,
+Age
+FROM Person
+```
+Kết quả thu được : 
+
+![image](https://user-images.githubusercontent.com/92925089/195785494-451c0349-e84c-4915-aab8-fb6b968f53e3.png)
+
+Bạn có thể thấy tôi đã đánh số liên tục cho toàn bộ các dòng trong bảng Person bắt đầu từ số 1, và tập hợp kết quả được sắp xếp theo cột Age. Sự sắp xếp này được hoàn thiện là do tiêu chuẩn “ORDER BY Age” trong mệnh đề ORDER BY của hàm ROW_NUMBER.
+
+Giả sử bạn không muốn tập hợp kết quả của bạn được sắp xếp mà muốn đưa bảng trở lại sắp xếp theo số bản ghi của từng dòng. Hàm ROW_NUMBER lại luôn yêu cầu phải có mệnh đề ORDER BY, vậy bạn cần phải đưa một giá trị nào đó vào trong mệnh đề này. Trong hàm truy vấn bên dưới tôi đã chỉ định “SELECT 1” vào trong mệnh đề ORDER BY, điều này sẽ chỉ trả lại kết quả là bảng như đã lưu trữ ban đầu và tất nhiên cách đánh số tuần tự vẫn bắt đầu từ 1:
+```
+SELECT ROW_NUMBER() OVER (ORDER BY (SELECT 1)) AS [Row Number by Record Set],
+FirstName,
+Age
+FROM Person
+```
+Và đây là kết quả khi chạy câu lệnh truy vấn trên : 
+![image](https://user-images.githubusercontent.com/92925089/195837593-8476d93a-6634-45ce-97cc-d4fd3c08242c.png)
+> Hàm ROW_NUMBER không chỉ cho phép bạn sắp xếp toàn bộ tập hợp dòng mà còn có thể sử dụng mệnh đề PARTITION để lọc ra nhóm dòng cần đánh số. Các dòng sẽ được đánh số tuần tự trong từng giá trị PARTITION độc nhất. Các dãy số được đánh sẽ luôn bắt đầu từ 1 cho từng giá trị PARTITION mới trong tập hợp bản ghi của bạn. Hãy xem hàm truy vấn dưới đây
+```
+SELECT ROW_NUMBER() OVER (PARTITION BY Gender ORDER BY Age) AS [Partition by Gender],
+FirstName,
+Age,
+Gender
+FROM Person
+```
+Khi chạy truy vấn trên, tập hợp kết quả sẽ ra như sau:
+![image](https://user-images.githubusercontent.com/92925089/195837750-904dccb4-0ac7-4036-aaad-b37649deeb42.png)
+
+	
