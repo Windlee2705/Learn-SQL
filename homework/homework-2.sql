@@ -97,13 +97,10 @@ where emp.EmployeeID in (
 )
 order by emp.HireDate
 -- Cách 2 : 
-select emp.* from dbo.Employees emp
+select e1.EmployeeID, e1.LastName, e1.FirstName, e2.EmployeeID, e2.FirstName
 
-where emp.EmployeeID not in (
-	select top (1) EmployeeID from dbo.Employees empChild
-	order by empChild.HireDate asc
-)
-order by emp.HireDate
+from Employees e1 join Employees e2 on e1.HireDate > e2.HireDate
+order by e1.EmployeeID
 
 -- 13. Hãy tìm mã, tên, giá hiện tại những mặt hàng mã công ty Around the Horn đã mua 
 select invo.ProductID, invo.ProductName, prod.UnitPrice as 'Don gia', count(invo.productID) from dbo.Invoices invo
