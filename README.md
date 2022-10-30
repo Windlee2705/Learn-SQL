@@ -60,6 +60,9 @@ SELECT nhacung.nhacung_id, nhacung.nhacung_ten, donhang.donhang_ngay
  ON nhacung.nhacung_id = donhang.nhacung_id;
  ```
  
+## UNION trong SQL Server 
+> https://viettuts.vn/sql/menh-de-union-trong-sql#goto-h2-1
+ 
 ## Tạo Store Procedure 
 > Stored Procedure được biên dịch và lưu vào bộ nhớ khi khởi tạo. Điều đó có nghĩa rằng nó sẽ thực thi nhanh hơn so với việc gửi từng đoạn lệnh SQL tới SQL Server. Vì nếu bạn gửi từng đoạn lệnh nhiều lần thì SQL Server cũng sẽ phải biên dịch lại nhiều lần, rất mất thời gian so với việc biên dịch sẵn.
 Để tạo một stored procedure trong SQL Server chúng ta có thể theo dõi cú pháp sau
