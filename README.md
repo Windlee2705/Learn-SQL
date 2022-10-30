@@ -113,6 +113,11 @@ exec pro_UpdateSinhVien 1, 'Le Quang Phong', ' Math', '2001', 'Ha Nam'
 ```
 Như vậy sinh viên có maSv là 1 sẽ được thay đổi với các thông tin như trên.
 
+## Cách lấy n chữ số sau dấu phẩy trong SQL Server 
+```
+select cast(your_float_column as decimal(10,2))
+from your_table
+```
 
 ## Try - Catch trong SQL
 ### Triển khai xử lý lỗi 
