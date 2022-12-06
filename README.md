@@ -564,4 +564,26 @@ FROM Person
 Khi chạy truy vấn trên, tập hợp kết quả sẽ ra như sau:
 ![image](https://user-images.githubusercontent.com/92925089/195837750-904dccb4-0ac7-4036-aaad-b37649deeb42.png)
 
-	
+## UPDATE trong SQL Server 
+> UPDATE là truy vấn được sử dụng để chỉnh sửa những bản ghi đã tồn tại trong bảng. Bạn có thể sử dụng mệnh đề WHERE với lệnh UPDATE để cập nhật các hàng được chọn, nếu không muốn tất cả các hàng trong bảng bị ảnh hưởng.
+### Cú pháp lệnh UPDATE trong SQL:
+```
+UPDATE TEN_BANG
+SET cot1 = gia_tri1, cot2 = gia_tri2...., cotN = gia_triN
+WHERE [DIEU_KIEN];
+```
+Nếu muốn sử dụng nhiều hơn một điều kiện trong WHERE, bạn đừng quên toán tử AND và OR mà chúng ta đã biết tới trong bài SQL trước nhé.<br/>
+Lưu ý: Hãy cẩn thận khi cập nhật các bản ghi trong một bảng! Chú ý tới mệnh đề WHERE trong lệnh UPDATE. Mệnh đề WHERE chỉ định (các) bản ghi nào cần được cập nhật. Nếu bạn bỏ qua mệnh đề WHERE, tất cả các bản ghi trong bảng sẽ được cập nhật!
+### Ví dụ về lệnh UPDATE trong SQL
+![image](https://user-images.githubusercontent.com/92925089/205989283-6134f3f8-e27b-4fe5-b8b9-b1863fd0fb08.png)
+```
+UPDATE NHANVIEN 
+SET DIACHI = 'Hanoi' 
+WHERE ID = 3;
+```
+![image](https://user-images.githubusercontent.com/92925089/205989398-550b794c-602f-466a-ac4d-79bec9e270f8.png)
+#### Update nhiều bản ghi
+![image](https://user-images.githubusercontent.com/92925089/205989520-2b95b27e-c4cc-466d-89a0-90ea224061c6.png)
+
+
+
