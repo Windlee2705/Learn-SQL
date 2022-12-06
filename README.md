@@ -585,5 +585,40 @@ WHERE ID = 3;
 #### Update nhiều bản ghi
 ![image](https://user-images.githubusercontent.com/92925089/205989520-2b95b27e-c4cc-466d-89a0-90ea224061c6.png)
 
-
+## Alter trong SQL
+> Trong SQL Server, lệnh ALTER TABLE được dùng để thêm cột, chỉnh sửa cột, xóa cột, đổi tên cột hoặc đổi tên bảng.
+![image](https://user-images.githubusercontent.com/92925089/205990273-90910333-2788-414f-8047-7e729fa87569.png)
+### Thêm cột vào bảng trong SQL Server
+```
+ALTER TABLE ten_bang
+  ADD ten_cot dinh_nghia_cot;
+```
+```
+ALTER TABLE Quantrimang
+  ADD Luotxem FLOAT(10);
+```
+![image](https://user-images.githubusercontent.com/92925089/205990509-e5be2bb8-2534-442d-a7ee-bc5b1cde3e89.png)
+### Thêm nhiều cột vào bảng trong SQL Server
+```
+ALTER TABLE Quantrimang
+  ADD Bientap VARCHAR(50),
+      Trangthai VARCHAR(50);
+```
+![image](https://user-images.githubusercontent.com/92925089/205990657-25cbe925-b7a5-4937-9b34-748b65c9db2a.png)
+### Chỉnh sửa cột trong bảng trong SQL Server
+```
+ALTER TABLE Quantrimang
+  ALTER COLUMN Trangthai VARCHAR(75) NOT NULL;
+```
+Lệnh trên sẽ sửa cột Trangthai sang kiểu dữ liệu VARCHAR(75) và không chấp nhận giá trị NULL.
+### Xóa cột của bảng trong SQL Server
+```
+ALTER TABLE Quantrimang
+  DROP COLUMN Bientap;
+```
+![image](https://user-images.githubusercontent.com/92925089/205990907-6fbef801-049f-4b70-96c1-2d46cac11959.png)
+### Đổi tên cột của bảng trong SQL Server
+![image](https://user-images.githubusercontent.com/92925089/205991120-d21445e4-de63-401f-97ae-a0eac1ac83e3.png)
+### Đổi tên bảng trong SQL Server
+![image](https://user-images.githubusercontent.com/92925089/205991184-9dd0c8a8-0708-434f-b080-50c844576f3e.png)
 
