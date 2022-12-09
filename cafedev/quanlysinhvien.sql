@@ -114,3 +114,16 @@ Viết thủ tục hoặc hàm liệt kê kết quả thi các môn của một 
 mã số của sinh viên (MSSV) gồm các thông tin: mã số môn học, lần thi, điểm thi. Trong đó, mã số sinh viên là giá trị input
 */
 
+CREATE PROCEDURE ThongTinSV(@mssv int)
+AS
+BEGIN
+     if exists(select * from DiemThi where MSSV = @mssv)
+		begin 
+			 select * from DiemThi where MSSV = @mssv
+		end
+	 else 
+		print N'Không tồn tại sinh viên có mssv là ' + cast(@mssv as nvarchar(30))
+		return 0
+END;
+
+exec ThongTinSV 13
