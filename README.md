@@ -60,6 +60,9 @@ SELECT nhacung.nhacung_id, nhacung.nhacung_ten, donhang.donhang_ngay
  ON nhacung.nhacung_id = donhang.nhacung_id;
  ```
  
+## UNION trong SQL Server 
+> https://viettuts.vn/sql/menh-de-union-trong-sql#goto-h2-1
+ 
 ## Tạo Store Procedure 
 > Stored Procedure được biên dịch và lưu vào bộ nhớ khi khởi tạo. Điều đó có nghĩa rằng nó sẽ thực thi nhanh hơn so với việc gửi từng đoạn lệnh SQL tới SQL Server. Vì nếu bạn gửi từng đoạn lệnh nhiều lần thì SQL Server cũng sẽ phải biên dịch lại nhiều lần, rất mất thời gian so với việc biên dịch sẵn.
 Để tạo một stored procedure trong SQL Server chúng ta có thể theo dõi cú pháp sau
@@ -113,6 +116,11 @@ exec pro_UpdateSinhVien 1, 'Le Quang Phong', ' Math', '2001', 'Ha Nam'
 ```
 Như vậy sinh viên có maSv là 1 sẽ được thay đổi với các thông tin như trên.
 
+## Cách lấy n chữ số sau dấu phẩy trong SQL Server 
+```
+select cast(your_float_column as decimal(10,2))
+from your_table
+```
 
 ## Try - Catch trong SQL
 ### Triển khai xử lý lỗi 
@@ -313,5 +321,571 @@ deallocate cursorXepLoai
 ```
 Khi thực hiện câu lệnh trên, ta sẽ update xếp loại của view ThongTinHuongDan như sau : 
 ![image](https://user-images.githubusercontent.com/92925089/191795256-f5881cd0-b099-4cf4-9fe4-c3bee79275c6.png)
+
+## With - as trong SQL
+![image](https://user-images.githubusercontent.com/92925089/192136020-7f253833-6a80-453c-9d5e-7fb7a337422d.png)
+
+```
+WITH ten_alias AS (lenh_truy_van_con)  
+SELECT danh_sach_cot FROM  ten_alias [ten_bang]  
+[WHERE dieu_kien_join]  
+```
+> With sẽ lưu một số cột được chỉ định vào trong một bảng tạm. Mệnh đề được sử dụng để xác định một quan hệ tạm thời sao cho đầu ra của quan hệ tạm thời này có sẵn và được sử dụng bởi truy vấn được liên kết với mệnh đề WITH.
+> AS trong SQL được sử dụng để gán tạm thời một tên mới cho một cột trong bảng. Việc này giúp biểu diễn các kết quả truy vấn và cho phép lập trình viên gán nhãn cho các kết quả một cách thích hợp, mà không thay tên các cột trong bảng vĩnh viễn.
+#### Ví dụ : Từ bảng Product detail extended trong csdl NorthWind, lấy ra những mặt hàng có đơn giá trung bình lớn hơn trung bình của tất cả các đơn giá trong database
+```
+with PriceTrungBinhTungMatHang as (
+	select ProductID, ProductName, avg(ExtendedPrice) as trungbinh from dbo.[Order Details Extended] 
+	group by ProductID, ProductName
+),
+	PriceTrungBinhAll as (
+	select avg(ExtendedPrice) as trungBinhAll from dbo.[Order Details Extended]
+)
+
+select PriceTrungBinhTungMatHang.* from PriceTrungBinhTungMatHang,PriceTrungBinhAll 
+where PriceTrungBinhTungMatHang.trungbinh > PriceTrungBinhAll.trungBinhAll
+```
+Ở đoạn code trên, ta sử dụng mệnh đề with để tạo ra 2 bảng tạm là PriceTrungBinhTungMatHang và PriceTrungBinhAll.
+
+## Function trong SQL
+> Function (Hàm) là một đối tượng trong cơ sở dữ liệu bao gồm một tập nhiều câu lệnh được nhóm lại với nhau và được tạo ra với mục đích sử dụng lại. Trong SQL Server, hàm được lưu trữ và bạn có thể truyền các tham số vào cũng như trả về các giá trị.
+### Cú pháp tạo function
+Để tạo một function trong SQL Server, ta sử dụng cú pháp như dưới đây:
+```
+CREATE FUNCTION [schema_name.]function_name
+( [ @parameter [ AS ] [type_schema_name.] datatype
+[ = default ] [ READONLY ]
+, @parameter [ AS ] [type_schema_name.] datatype
+[ = default ] [ READONLY ] ]
+)
+
+RETURNS return_datatype
+
+[ WITH { ENCRYPTION
+| SCHEMABINDING
+| RETURNS NULL ON NULL INPUT
+| CALLED ON NULL INPUT
+| EXECUTE AS Clause ]
+
+[ AS ]
+
+BEGIN
+
+[declaration_section]
+
+executable_section
+
+RETURN return_value
+
+END;
+```
+Trong đó, các tham số : 
+- schema_name: Tên schema (lược đồ) sở hữu function.
+- function_name: Tên gán cho function.
+- @parameter: Một hay nhiều tham số được truyền vào hàm.
+- type_schema_name: Kiểu dữ liệu của schema (nếu có).
+- Datatype: Kiểu dữ liệu cho @parameter.
+- Default: Giá trị mặc định gán cho @parameter.
+- READONLY: @parameter không thể bị function ghi đè lên.
+- return_datatype: Kiểu dữ liệu của giá trị trả về.
+- ENCRYPTION: Mã nguồn (source) của function sẽ không được lưu trữ dưới dạng text trong hệ thống.
+- SCHEMABINDING: Đảm bảo các đối tượng không bị chỉnh sửa gây ảnh hưởng đến function.
+- RETURNS NULL ON NULL INPUT: Hàm sẽ trả về NULL nếu bất cứ parameter nào là NULL.
+- CALL ON NULL INPUT: Hàm sẽ thực thi cho dù bao gồm tham số là NULL.
+- EXECUTE AS clause: Xác định ngữ cảnh bảo mật để thực thi hàm.
+- return_value: Giá trị được trả về.
+
+#### Ví dụ : trong table HuongDan trong csdl ThucTap, t muốn xem sinh viên đó xếp loại gì, trước đây ta dùng con trỏ để duyệt qua từng hàng trong bảng, bây giờ với function ta cũng có thể set sinh viên đó xếp loại gì : 
+```
+create function funcXepLoai( 
+@hd_ketQua as decimal(5,2)
+)
+returns char(50)
+
+as begin 
+
+declare @hd_xepLoai char(50);
+
+if @hd_ketQua is null
+	return 'Chua co ket qua'
+
+if @hd_ketQua >= 8
+	set @hd_xepLoai = 'Gioi'
+else if @hd_ketQua >=5 and @hd_ketQua<8
+	set @hd_xepLoai = 'Kha'
+else set @hd_xepLoai = 'Trung Binh'
+
+return @hd_xepLoai
+
+end
+```
+Sau khi khai báo function funcXepLoai như bên trên, function này nhận vào 1 tham số là hd_ketQua với kiểu dữ liệu decimal(5,2) và trả về kiểu dữ liệu char(50) để xếp loại sinh viên. Khi sử dụng function đó, ta thực hiện câu lệnh : 
+```
+select hd.*, dbo.funcXepLoai(hd.ketQua) as test  from dbo.HuongDan hd
+```
+Sau đó, ta sẽ thu được kết quả như sau : 
+![image](https://user-images.githubusercontent.com/92925089/192147245-61e641ec-90f5-4b08-b10b-fe64fe7a14f5.png)
+
+### Drop Function (Xóa bỏ function)
+> Một khi đã tạo thành công các function thì cũng sẽ có những trường hợp bạn muốn xóa bỏ function khỏi cơ sở dữ liệu vì một vài lý do.
+#### Cú pháp : 
+```
+DROP FUNCTION function_name;
+```
+#### Ví dụ : 
+```
+DROP FUNCTION funcXepLoai;
+```
+Sử dụng câu lệnh này, ta sẽ xóa bỏ function có tên là funcXepLoai ra khỏi database
+
+## Case
+> Câu lệnh CASE dùng để thiết lập điều kiện rẽ nhánh trong SQL Server, tương tự chức năng của câu lệnh IF-THEN-ELSE.
+Case có 2 định dạng : 
+- Hàm CASE đơn giản hay còn gọi là Simple CASE.
+- Hàm CASE tìm kiếm hay còn gọi là Searched CASE.
+> Trong đó :
+- Simple CASE là so sánh một biểu thức với một bộ các biểu thức đơn giản để xác định kết quả.
+- Searched CASE là đánh giá một bộ các biểu thức Boolean để xác định kết quả.
+- Cả 2 định dạng trên đều hỗ trợ đối số ELSE (nhưng không bắt buộc).
+### Cú pháp : 
+```
+CASE bieuthuc_dauvao
+WHEN bieuthuc_1 THEN ketqua_1
+WHEN bieuthuc_2 THEN ketqua_2
+...
+WHEN bieuthuc_n THEN ketqua_n
+ELSE ketqua_khac
+END
+
+// Hoặc Searched CASE
+
+CASE
+WHEN dieukien_1 THEN ketqua_1
+WHEN dieukien_2 THEN ketqua_2
+...
+WHEN dieukien_n THEN ketqua_n
+ELSE ketqua_khac
+END
+```
+#### Ví dụ : 
+Simple Case : 
+```
+SELECT tenchuyenmuc, Code
+(CASE code
+WHEN 01 THEN 'Laptrinh-Quantrimang.com'
+WHEN 02 THEN 'Congnghe-Quantrimang.com'
+WHEN 03 THEN 'Cuocsong-Quantrimang.com'
+ELSE 'Khoahoc-Quantrimang.com'
+END) AS Chuyenmuc
+FROM chuyenmuc
+ORDER BY Code
+```
+![image](https://user-images.githubusercontent.com/92925089/194116275-8eb377b3-605d-4d89-a300-20301fb97b41.png)
+
+Searched CASE : 
+```
+SELECT tenchuyenmuc,
+CASE
+WHEN code = 01 THEN 'Laptrinh-Quantrimang.com'
+WHEN code = 02 THEN 'Congnghe-Quantrimang.com'
+WHEN code = 03 THEN 'Cuocsong-Quantrimang.com'
+ELSE 'Khoahoc-Quantrimang.com'
+END
+FROM chuyenmuc;
+```
+So sánh 2 điều kiện : 
+```
+SELECT
+CASE
+WHEN code < 2 THEN 'Laptrinh-Quantrimang.com'
+WHEN code = 2 THEN 'Congnghe-Quantrimang.com'
+END
+FROM chuyenmuc;
+```
+
+## Các hàm Ranking trong SQL Server
+> Các hàm Ranking cho phép bạn có thể đánh số liên tục (xếp loại) cho các tập hợp kết quả. Các hàm này có thể được sử dụng để cung cấp số thứ tự trong hệ thống đánh số tuần tự khác nhau. Có thể hiểu đơn giản như sau: bạn có từng con số nằm trên từng dòng liên tục, tại dòng thứ nhất xếp loại số 1, dòng thứ 2 xếp loại số là 2… Bạn có thể sử dụng hàm ranking theo các nhóm số tuần tự, mỗi một nhóm sẽ được đánh số theo lược đồ 1,2,3 và nhóm tiếp theo lại bắt đầu bằng 1,2,3…
+### Dữ liệu chạy thử cho các ví dụ : 
+```
+SET NOCOUNT ON
+CREATE TABLE Person(
+FirstName VARCHAR(10),
+Age INT,
+Gender CHAR(1))
+INSERT INTO Person VALUES ('Ted',23,'M')
+INSERT INTO Person VALUES ('John',40,'M')
+INSERT INTO Person VALUES ('George',6,'M')
+INSERT INTO Person VALUES ('Mary',11,'F')
+INSERT INTO Person VALUES ('Sam',17,'M')
+INSERT INTO Person VALUES ('Doris',6,'F')
+INSERT INTO Person VALUES ('Frank',38,'M')
+INSERT INTO Person VALUES ('Larry',5,'M')
+INSERT INTO Person VALUES ('Sue',29,'F')
+INSERT INTO Person VALUES ('Sherry',11,'F')
+INSERT INTO Person VALUES ('Marty',23,'F')
+```
+
+### Hàm Row_Number
+> Hàm đầu tiên tôi muốn nói tới là ROW_NUMBER. Hàm này trả lại một dãy số tuần tự bắt đầu từ 1 cho mỗi dòng hay nhóm trong tập hợp kết quả. Hàm ROW_NUMBER sẽ có cú pháp sau:
+```
+ROW_NUMBER ( ) OVER ( [ ] )
+```
+#### Ví dụ :
+Ví dụ dưới sẽ đánh số liên tục cho tất cả các dòng trong bảng Person và sắp xếp chúng theo trường Age
+```
+SELECT ROW_NUMBER() OVER (ORDER BY Age) AS [Row Number by Age],
+FirstName,
+Age
+FROM Person
+```
+Kết quả thu được : 
+
+![image](https://user-images.githubusercontent.com/92925089/195785494-451c0349-e84c-4915-aab8-fb6b968f53e3.png)
+
+Bạn có thể thấy tôi đã đánh số liên tục cho toàn bộ các dòng trong bảng Person bắt đầu từ số 1, và tập hợp kết quả được sắp xếp theo cột Age. Sự sắp xếp này được hoàn thiện là do tiêu chuẩn “ORDER BY Age” trong mệnh đề ORDER BY của hàm ROW_NUMBER.
+
+Giả sử bạn không muốn tập hợp kết quả của bạn được sắp xếp mà muốn đưa bảng trở lại sắp xếp theo số bản ghi của từng dòng. Hàm ROW_NUMBER lại luôn yêu cầu phải có mệnh đề ORDER BY, vậy bạn cần phải đưa một giá trị nào đó vào trong mệnh đề này. Trong hàm truy vấn bên dưới tôi đã chỉ định “SELECT 1” vào trong mệnh đề ORDER BY, điều này sẽ chỉ trả lại kết quả là bảng như đã lưu trữ ban đầu và tất nhiên cách đánh số tuần tự vẫn bắt đầu từ 1:
+```
+SELECT ROW_NUMBER() OVER (ORDER BY (SELECT 1)) AS [Row Number by Record Set],
+FirstName,
+Age
+FROM Person
+```
+Và đây là kết quả khi chạy câu lệnh truy vấn trên : 
+![image](https://user-images.githubusercontent.com/92925089/195837593-8476d93a-6634-45ce-97cc-d4fd3c08242c.png)
+> Hàm ROW_NUMBER không chỉ cho phép bạn sắp xếp toàn bộ tập hợp dòng mà còn có thể sử dụng mệnh đề PARTITION để lọc ra nhóm dòng cần đánh số. Các dòng sẽ được đánh số tuần tự trong từng giá trị PARTITION độc nhất. Các dãy số được đánh sẽ luôn bắt đầu từ 1 cho từng giá trị PARTITION mới trong tập hợp bản ghi của bạn. Hãy xem hàm truy vấn dưới đây
+```
+SELECT ROW_NUMBER() OVER (PARTITION BY Gender ORDER BY Age) AS [Partition by Gender],
+FirstName,
+Age,
+Gender
+FROM Person
+```
+Khi chạy truy vấn trên, tập hợp kết quả sẽ ra như sau:
+![image](https://user-images.githubusercontent.com/92925089/195837750-904dccb4-0ac7-4036-aaad-b37649deeb42.png)
+
+## UPDATE trong SQL Server 
+> UPDATE là truy vấn được sử dụng để chỉnh sửa những bản ghi đã tồn tại trong bảng. Bạn có thể sử dụng mệnh đề WHERE với lệnh UPDATE để cập nhật các hàng được chọn, nếu không muốn tất cả các hàng trong bảng bị ảnh hưởng.
+### Cú pháp lệnh UPDATE trong SQL:
+```
+UPDATE TEN_BANG
+SET cot1 = gia_tri1, cot2 = gia_tri2...., cotN = gia_triN
+WHERE [DIEU_KIEN];
+```
+Nếu muốn sử dụng nhiều hơn một điều kiện trong WHERE, bạn đừng quên toán tử AND và OR mà chúng ta đã biết tới trong bài SQL trước nhé.<br/>
+Lưu ý: Hãy cẩn thận khi cập nhật các bản ghi trong một bảng! Chú ý tới mệnh đề WHERE trong lệnh UPDATE. Mệnh đề WHERE chỉ định (các) bản ghi nào cần được cập nhật. Nếu bạn bỏ qua mệnh đề WHERE, tất cả các bản ghi trong bảng sẽ được cập nhật!
+### Ví dụ về lệnh UPDATE trong SQL
+![image](https://user-images.githubusercontent.com/92925089/205989283-6134f3f8-e27b-4fe5-b8b9-b1863fd0fb08.png)
+```
+UPDATE NHANVIEN 
+SET DIACHI = 'Hanoi' 
+WHERE ID = 3;
+```
+![image](https://user-images.githubusercontent.com/92925089/205989398-550b794c-602f-466a-ac4d-79bec9e270f8.png)
+#### Update nhiều bản ghi
+![image](https://user-images.githubusercontent.com/92925089/205989520-2b95b27e-c4cc-466d-89a0-90ea224061c6.png)
+
+## Alter trong SQL
+> Trong SQL Server, lệnh ALTER TABLE được dùng để thêm cột, chỉnh sửa cột, xóa cột, đổi tên cột hoặc đổi tên bảng.
+![image](https://user-images.githubusercontent.com/92925089/205990273-90910333-2788-414f-8047-7e729fa87569.png)
+### Thêm cột vào bảng trong SQL Server
+```
+ALTER TABLE ten_bang
+  ADD ten_cot dinh_nghia_cot;
+```
+```
+ALTER TABLE Quantrimang
+  ADD Luotxem FLOAT(10);
+```
+![image](https://user-images.githubusercontent.com/92925089/205990509-e5be2bb8-2534-442d-a7ee-bc5b1cde3e89.png)
+### Thêm nhiều cột vào bảng trong SQL Server
+```
+ALTER TABLE Quantrimang
+  ADD Bientap VARCHAR(50),
+      Trangthai VARCHAR(50);
+```
+![image](https://user-images.githubusercontent.com/92925089/205990657-25cbe925-b7a5-4937-9b34-748b65c9db2a.png)
+### Chỉnh sửa cột trong bảng trong SQL Server
+```
+ALTER TABLE Quantrimang
+  ALTER COLUMN Trangthai VARCHAR(75) NOT NULL;
+```
+Lệnh trên sẽ sửa cột Trangthai sang kiểu dữ liệu VARCHAR(75) và không chấp nhận giá trị NULL.
+### Xóa cột của bảng trong SQL Server
+```
+ALTER TABLE Quantrimang
+  DROP COLUMN Bientap;
+```
+![image](https://user-images.githubusercontent.com/92925089/205990907-6fbef801-049f-4b70-96c1-2d46cac11959.png)
+### Đổi tên cột của bảng trong SQL Server
+![image](https://user-images.githubusercontent.com/92925089/205991120-d21445e4-de63-401f-97ae-a0eac1ac83e3.png)
+### Đổi tên bảng trong SQL Server
+![image](https://user-images.githubusercontent.com/92925089/205991184-9dd0c8a8-0708-434f-b080-50c844576f3e.png)
+
+
+## Trigger trong SQL
+> Trigger trong SQL là một đoạn procedure code, chỉ được vận hành khi có một sự kiện xảy ra. Có nhiều loại sự kiện khác nhau để kích hoạt trigger trong SQL. Có thể kể đến như việc chèn các hàng trong bảng, thay đổi cấu trúc bảng hoặc thậm chí người dùng đăng nhập vào một phiên bản SQL Server.
+![image](https://user-images.githubusercontent.com/92925089/206639114-cfa80d22-03ff-4be7-b76d-ad269b9ad24c.png)
+Có ba đặc điểm chính làm cho trigger trong SQL khác với các stored procedures:
+- Người dùng không thể thực hiện thủ công các trigger.
+- Không có cơ hội cho trigger nhận thông số.
+- Bạn sẽ không thể cam kết hoặc khôi phục một transaction bên trong trigger.
+Cú pháp:
+```
+CREATE TRIGGER tên_trigger ON tên_bảng
+FOR {DELETE, INSERT, UPDATE}
+AS 
+  câu_lệnh_sql
+```
+
+Trigger trong SQL Server là các stored procedure đặc biệt được thực thi tự động để phản hồi với các đối tượng cơ sở dữ liệu, cơ sở dữ liệu và các sự kiện máy chủ. SQL Server cung cấp ba loại trigger:
+- Trigger dữ liệu ngôn ngữ thao tác (Trigger DML) kích hoạt khi xảy ra sự kiện INSERT, UPDATE và DELETE dữ liệu xảy ra trên bảng.
+- Trigger dữ liệu ngôn ngữ định nghĩa (Trigger DDL) kích hoạt khi xảy ra các câu lệnh CREATE, ALTER và DROP.
+- Trigger đăng nhập (Trigger  Logon) kích hoạt khi xảy ra các sự kiện LOGON.
+Các bảng ảo cho trigger: INSERTED và DELETED </br>
+SQL Server cung cấp hai bảng ảo đặc biệt cho trigger là bảng INSERTED và DELETED. SQL Server sử dụng các bảng này để thu thập dữ liệu của bản ghi đã sửa đổi trước và sau khi sự kiện xảy ra.
+![image](https://user-images.githubusercontent.com/92925089/206640863-2980d53d-5e2e-4a94-81f6-a50511ea53ba.png)
+![image](https://user-images.githubusercontent.com/92925089/206690868-54cb0ab1-c21d-4d31-940e-794d5581afeb.png)
+![image](https://user-images.githubusercontent.com/92925089/206690982-12d774bf-039d-46d1-9b5d-211a721b44df.png)
+```
+CREATE TRIGGER production.trg_product_audit
+ON production.products
+AFTER INSERT, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO production.product_audits(
+        product_id, 
+        product_name,
+        brand_id,
+        category_id,
+        model_year,
+        list_price, 
+        updated_at, 
+        operation
+    )
+    SELECT
+        i.product_id,
+        product_name,
+        brand_id,
+        category_id,
+        model_year,
+        i.list_price,
+        GETDATE(),
+        'INS'
+    FROM
+        inserted i
+    UNION ALL
+    SELECT
+        d.product_id,
+        product_name,
+        brand_id,
+        category_id,
+        model_year,
+        d.list_price,
+        GETDATE(),
+        'DEL'
+    FROM
+        deleted d;
+END
+```
+![image](https://user-images.githubusercontent.com/92925089/206691143-fc1c5833-1e0e-4cc5-b6d1-340c9c918a0b.png)
+Kiểm tra hoạt động của trigger trong SQL Server
+
+Trigger trong SQL Server: Hướng dẫn từ A-Z về Trigger
+Trung Nguyen 
+20/05/2020
+ 
+20 min read
+Nội dung chính của bài viết
+Trigger trong SQL Server là các stored procedure đặc biệt được thực thi tự động để phản hồi với các đối tượng cơ sở dữ liệu, cơ sở dữ liệu và các sự kiện máy chủ. SQL Server cung cấp ba loại trigger:
+
+Trigger dữ liệu ngôn ngữ thao tác (Trigger DML) kích hoạt khi xảy ra sự kiện INSERT, UPDATE và DELETE dữ liệu xảy ra trên bảng.
+Trigger dữ liệu ngôn ngữ định nghĩa (Trigger DDL) kích hoạt khi xảy ra các câu lệnh CREATE, ALTER và DROP.
+Trigger đăng nhập (Trigger  Logon) kích hoạt khi xảy ra các sự kiện LOGON.
+Tạo trigger trong SQL Server
+Trong phần này, bạn sẽ tìm hiểu cách sử dụng câu lệnh CREATE TRIGGER trong SQL Server để tạo một trigger mới.
+
+Giới thiệu về câu lệnh CREATE TRIGGER trong SQL Server
+
+Câu lệnh CREATE TRIGGER cho phép bạn tạo một trigger mới sẽ được kích hoạt tự động bất cứ khi nào một sự kiện như INSERT, DELETE hoặc UPDATE xảy ra đối với một bảng.
+
+Sau đây minh họa cú pháp của câu lệnh CREATE TRIGGER:
+
+CREATE TRIGGER [schema_name.]trigger_name
+ON table_name
+AFTER  {[INSERT],[UPDATE],[DELETE]}
+[NOT FOR REPLICATION]
+AS
+{sql_statements}
+Copy
+Trong cú pháp này:
+
+schema_name là tên của lược đồ mà trigger thuộc. Tên lược đồ là tùy chọn.
+trigger_name là tên do người dùng chỉ định cho trigger.
+table_name là bảng sẽ áp dụng trigger.
+Sự kiện kích hoạt trigger được liệt kê trong câu lệnh AFTER. Sự kiện này có thể là INSERT, UPDATE hoặc DELETE. Một trigger có thể kích hoạt với một hoặc nhiều sự kiện xảy ra trên bảng.
+Tùy chọn NOT FOR REPLICATION chỉ thị SQL Server không được kích hoạt trigger khi sửa đổi dữ liệu được thực hiện như một phần của quá trình sao chép.
+sql_statements là một hoặc nhiều câu lệnh Transact-SQL được sử dụng để thực hiện các hành động sau khi một sự kiện xảy ra.
+Các bảng ảo cho trigger: INSERTED và DELETED
+SQL Server cung cấp hai bảng ảo đặc biệt cho trigger là bảng INSERTED và DELETED. SQL Server sử dụng các bảng này để thu thập dữ liệu của bản ghi đã sửa đổi trước và sau khi sự kiện xảy ra.
+
+Bảng dưới đây cho thấy nội dung của bảng INSERTED và DELETED trước và sau mỗi sự kiện:
+
+Sự kiện	Bảng INSERTED chứa	Bảng DELETED chứa
+INSERT	Các bản ghi đã được insert	Trống
+UPDATE	Các bản ghi sau khi được update	Các bản ghi trước khi được update
+DELETE	Trống	Các bản ghi đã được delete
+Hãy xem một số ví dụ tạo trigger trong SQL Server. Chúng tôi sẽ sử dụng bảng production.products trong cơ sở dữ liệu mẫu BikeStores để minh họa.
+
+Bảng products trong cơ sở dữ liệu mẫu trong SQL Server
+Ví dụ tạo bảng để ghi nhật ký thay đổi
+Câu lệnh sau đây tạo một bảng có tên production.product_audits để ghi thông tin khi một sự kiện INSERT hoặc DELETE xảy ra đối với bảng production.products:
+
+CREATE TABLE production.product_audits
+(
+    change_id INT IDENTITY PRIMARY KEY,
+    product_id INT NOT NULL,
+    product_name VARCHAR(255) NOT NULL,
+    brand_id INT NOT NULL,
+    category_id INT NOT NULL,
+    model_year SMALLINT NOT NULL,
+    list_price DEC(10,2) NOT NULL,
+    updated_at DATETIME NOT NULL,
+    operation CHAR(3) NOT NULL,
+    CHECK(operation = 'INS' or operation='DEL')
+);
+Copy
+Bảng production.product_audits có tất cả các cột từ bảng production.products. Bên cạnh đó, nó được bổ sung thêm một vài cột để ghi lại những thay đổi ví dụ updated_at, operation và change_id.
+
+Ví dụ tạo trigger DML trong SQL Server
+Đầu tiên, để tạo một trigger mới, bạn chỉ định tên của trigger và lược đồ mà trigger thuộc về sau mệnh đề CREATE TRIGGER như sau:
+
+
+CREATE TRIGGER production.trg_product_audit
+Copy
+Tiếp theo, bạn chỉ định tên của bảng trong mệnh đề ON, trigger sẽ kích hoạt khi xảy ra sự kiện trên bảng này:
+
+ON production.products
+Copy
+Sau đó, bạn liệt kê một hoặc nhiều sự kiện sẽ kích hoạt trigger trong mệnh đề AFTER:
+
+AFTER INSERT, DELETE
+Copy
+Phần thân của trigger bắt đầu bằng từ khóa AS:
+
+AS
+BEGIN
+Copy
+Sau đó, bên trong thân của trigger, bạn thiết lập SET NOCOUNT ON để ngăn chặn thông báo số lượng bản ghi bị ảnh hưởng bất cứ khi nào trigger được kích hoạt.
+
+SET NOCOUNT ON;
+Copy
+Trigger sẽ INSERT một bản ghi vào bảng production.product_audits bất cứ khi nào một bản ghi được chèn vào hoặc xóa khỏi bảng production.products. Dữ liệu để chèn vào bảng production.product_audits được cung cấp từ bảng INSERTED và DELETED thông qua toán tử UNION ALL như sau:
+
+INSERT INTO production.product_audits
+(
+    product_id,
+    product_name,
+    brand_id,
+    category_id,
+    model_year,
+    list_price,
+    updated_at,
+    operation
+)
+SELECT
+    i.product_id,
+    product_name,
+    brand_id,
+    category_id,
+    model_year,
+    i.list_price,
+    GETDATE(),
+    'INS'
+FROM
+    inserted AS i
+UNION ALL
+SELECT
+    d.product_id,
+    product_name,
+    brand_id,
+    category_id,
+    model_year,
+    d.list_price,
+    getdate(),
+    'DEL'
+FROM
+    deleted AS d;
+Copy
+Sau đây câu lệnh tạo trigger hoàn chỉnh:
+
+
+CREATE TRIGGER production.trg_product_audit
+ON production.products
+AFTER INSERT, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO production.product_audits(
+        product_id, 
+        product_name,
+        brand_id,
+        category_id,
+        model_year,
+        list_price, 
+        updated_at, 
+        operation
+    )
+    SELECT
+        i.product_id,
+        product_name,
+        brand_id,
+        category_id,
+        model_year,
+        i.list_price,
+        GETDATE(),
+        'INS'
+    FROM
+        inserted i
+    UNION ALL
+    SELECT
+        d.product_id,
+        product_name,
+        brand_id,
+        category_id,
+        model_year,
+        d.list_price,
+        GETDATE(),
+        'DEL'
+    FROM
+        deleted d;
+END
+Copy
+Cuối cùng, bạn thực thi câu lệnh trên để tạo trigger. Khi trigger được tạo, bạn có thể tìm thấy nó trong thư mục Triggers của bảng như trong hình sau:
+
+Tạo trigger DML trong SQL Server
+Kiểm tra hoạt động của trigger trong SQL Server </br>
+Câu lệnh sau đây chèn một bản ghi mới vào bảng production.products:
+```
+INSERT INTO production.products
+(
+    product_name, 
+    brand_id, 
+    category_id, 
+    model_year, 
+    list_price
+)
+VALUES 
+(
+    'Test product',
+    1,
+    1,
+    2018,
+    599
+);
+```
+![image](https://user-images.githubusercontent.com/92925089/206691374-475faf79-6ca8-4c3b-b60f-20d886f810b4.png)
+![image](https://user-images.githubusercontent.com/92925089/206691422-cd470d0d-01dd-4f82-9e5f-8e44b62b1468.png)
 
 
