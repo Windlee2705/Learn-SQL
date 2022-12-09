@@ -622,3 +622,270 @@ ALTER TABLE Quantrimang
 ### Đổi tên bảng trong SQL Server
 ![image](https://user-images.githubusercontent.com/92925089/205991184-9dd0c8a8-0708-434f-b080-50c844576f3e.png)
 
+
+## Trigger trong SQL
+> Trigger trong SQL là một đoạn procedure code, chỉ được vận hành khi có một sự kiện xảy ra. Có nhiều loại sự kiện khác nhau để kích hoạt trigger trong SQL. Có thể kể đến như việc chèn các hàng trong bảng, thay đổi cấu trúc bảng hoặc thậm chí người dùng đăng nhập vào một phiên bản SQL Server.
+![image](https://user-images.githubusercontent.com/92925089/206639114-cfa80d22-03ff-4be7-b76d-ad269b9ad24c.png)
+Có ba đặc điểm chính làm cho trigger trong SQL khác với các stored procedures:
+- Người dùng không thể thực hiện thủ công các trigger.
+- Không có cơ hội cho trigger nhận thông số.
+- Bạn sẽ không thể cam kết hoặc khôi phục một transaction bên trong trigger.
+Cú pháp:
+```
+CREATE TRIGGER tên_trigger ON tên_bảng
+FOR {DELETE, INSERT, UPDATE}
+AS 
+  câu_lệnh_sql
+```
+
+Trigger trong SQL Server là các stored procedure đặc biệt được thực thi tự động để phản hồi với các đối tượng cơ sở dữ liệu, cơ sở dữ liệu và các sự kiện máy chủ. SQL Server cung cấp ba loại trigger:
+- Trigger dữ liệu ngôn ngữ thao tác (Trigger DML) kích hoạt khi xảy ra sự kiện INSERT, UPDATE và DELETE dữ liệu xảy ra trên bảng.
+- Trigger dữ liệu ngôn ngữ định nghĩa (Trigger DDL) kích hoạt khi xảy ra các câu lệnh CREATE, ALTER và DROP.
+- Trigger đăng nhập (Trigger  Logon) kích hoạt khi xảy ra các sự kiện LOGON.
+Các bảng ảo cho trigger: INSERTED và DELETED </br>
+SQL Server cung cấp hai bảng ảo đặc biệt cho trigger là bảng INSERTED và DELETED. SQL Server sử dụng các bảng này để thu thập dữ liệu của bản ghi đã sửa đổi trước và sau khi sự kiện xảy ra.
+![image](https://user-images.githubusercontent.com/92925089/206640863-2980d53d-5e2e-4a94-81f6-a50511ea53ba.png)
+![image](https://user-images.githubusercontent.com/92925089/206690868-54cb0ab1-c21d-4d31-940e-794d5581afeb.png)
+![image](https://user-images.githubusercontent.com/92925089/206690982-12d774bf-039d-46d1-9b5d-211a721b44df.png)
+```
+CREATE TRIGGER production.trg_product_audit
+ON production.products
+AFTER INSERT, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO production.product_audits(
+        product_id, 
+        product_name,
+        brand_id,
+        category_id,
+        model_year,
+        list_price, 
+        updated_at, 
+        operation
+    )
+    SELECT
+        i.product_id,
+        product_name,
+        brand_id,
+        category_id,
+        model_year,
+        i.list_price,
+        GETDATE(),
+        'INS'
+    FROM
+        inserted i
+    UNION ALL
+    SELECT
+        d.product_id,
+        product_name,
+        brand_id,
+        category_id,
+        model_year,
+        d.list_price,
+        GETDATE(),
+        'DEL'
+    FROM
+        deleted d;
+END
+```
+![image](https://user-images.githubusercontent.com/92925089/206691143-fc1c5833-1e0e-4cc5-b6d1-340c9c918a0b.png)
+Kiểm tra hoạt động của trigger trong SQL Server
+
+Trigger trong SQL Server: Hướng dẫn từ A-Z về Trigger
+Trung Nguyen 
+20/05/2020
+ 
+20 min read
+Nội dung chính của bài viết
+Trigger trong SQL Server là các stored procedure đặc biệt được thực thi tự động để phản hồi với các đối tượng cơ sở dữ liệu, cơ sở dữ liệu và các sự kiện máy chủ. SQL Server cung cấp ba loại trigger:
+
+Trigger dữ liệu ngôn ngữ thao tác (Trigger DML) kích hoạt khi xảy ra sự kiện INSERT, UPDATE và DELETE dữ liệu xảy ra trên bảng.
+Trigger dữ liệu ngôn ngữ định nghĩa (Trigger DDL) kích hoạt khi xảy ra các câu lệnh CREATE, ALTER và DROP.
+Trigger đăng nhập (Trigger  Logon) kích hoạt khi xảy ra các sự kiện LOGON.
+Tạo trigger trong SQL Server
+Trong phần này, bạn sẽ tìm hiểu cách sử dụng câu lệnh CREATE TRIGGER trong SQL Server để tạo một trigger mới.
+
+Giới thiệu về câu lệnh CREATE TRIGGER trong SQL Server
+
+Câu lệnh CREATE TRIGGER cho phép bạn tạo một trigger mới sẽ được kích hoạt tự động bất cứ khi nào một sự kiện như INSERT, DELETE hoặc UPDATE xảy ra đối với một bảng.
+
+Sau đây minh họa cú pháp của câu lệnh CREATE TRIGGER:
+
+CREATE TRIGGER [schema_name.]trigger_name
+ON table_name
+AFTER  {[INSERT],[UPDATE],[DELETE]}
+[NOT FOR REPLICATION]
+AS
+{sql_statements}
+Copy
+Trong cú pháp này:
+
+schema_name là tên của lược đồ mà trigger thuộc. Tên lược đồ là tùy chọn.
+trigger_name là tên do người dùng chỉ định cho trigger.
+table_name là bảng sẽ áp dụng trigger.
+Sự kiện kích hoạt trigger được liệt kê trong câu lệnh AFTER. Sự kiện này có thể là INSERT, UPDATE hoặc DELETE. Một trigger có thể kích hoạt với một hoặc nhiều sự kiện xảy ra trên bảng.
+Tùy chọn NOT FOR REPLICATION chỉ thị SQL Server không được kích hoạt trigger khi sửa đổi dữ liệu được thực hiện như một phần của quá trình sao chép.
+sql_statements là một hoặc nhiều câu lệnh Transact-SQL được sử dụng để thực hiện các hành động sau khi một sự kiện xảy ra.
+Các bảng ảo cho trigger: INSERTED và DELETED
+SQL Server cung cấp hai bảng ảo đặc biệt cho trigger là bảng INSERTED và DELETED. SQL Server sử dụng các bảng này để thu thập dữ liệu của bản ghi đã sửa đổi trước và sau khi sự kiện xảy ra.
+
+Bảng dưới đây cho thấy nội dung của bảng INSERTED và DELETED trước và sau mỗi sự kiện:
+
+Sự kiện	Bảng INSERTED chứa	Bảng DELETED chứa
+INSERT	Các bản ghi đã được insert	Trống
+UPDATE	Các bản ghi sau khi được update	Các bản ghi trước khi được update
+DELETE	Trống	Các bản ghi đã được delete
+Hãy xem một số ví dụ tạo trigger trong SQL Server. Chúng tôi sẽ sử dụng bảng production.products trong cơ sở dữ liệu mẫu BikeStores để minh họa.
+
+Bảng products trong cơ sở dữ liệu mẫu trong SQL Server
+Ví dụ tạo bảng để ghi nhật ký thay đổi
+Câu lệnh sau đây tạo một bảng có tên production.product_audits để ghi thông tin khi một sự kiện INSERT hoặc DELETE xảy ra đối với bảng production.products:
+
+CREATE TABLE production.product_audits
+(
+    change_id INT IDENTITY PRIMARY KEY,
+    product_id INT NOT NULL,
+    product_name VARCHAR(255) NOT NULL,
+    brand_id INT NOT NULL,
+    category_id INT NOT NULL,
+    model_year SMALLINT NOT NULL,
+    list_price DEC(10,2) NOT NULL,
+    updated_at DATETIME NOT NULL,
+    operation CHAR(3) NOT NULL,
+    CHECK(operation = 'INS' or operation='DEL')
+);
+Copy
+Bảng production.product_audits có tất cả các cột từ bảng production.products. Bên cạnh đó, nó được bổ sung thêm một vài cột để ghi lại những thay đổi ví dụ updated_at, operation và change_id.
+
+Ví dụ tạo trigger DML trong SQL Server
+Đầu tiên, để tạo một trigger mới, bạn chỉ định tên của trigger và lược đồ mà trigger thuộc về sau mệnh đề CREATE TRIGGER như sau:
+
+
+CREATE TRIGGER production.trg_product_audit
+Copy
+Tiếp theo, bạn chỉ định tên của bảng trong mệnh đề ON, trigger sẽ kích hoạt khi xảy ra sự kiện trên bảng này:
+
+ON production.products
+Copy
+Sau đó, bạn liệt kê một hoặc nhiều sự kiện sẽ kích hoạt trigger trong mệnh đề AFTER:
+
+AFTER INSERT, DELETE
+Copy
+Phần thân của trigger bắt đầu bằng từ khóa AS:
+
+AS
+BEGIN
+Copy
+Sau đó, bên trong thân của trigger, bạn thiết lập SET NOCOUNT ON để ngăn chặn thông báo số lượng bản ghi bị ảnh hưởng bất cứ khi nào trigger được kích hoạt.
+
+SET NOCOUNT ON;
+Copy
+Trigger sẽ INSERT một bản ghi vào bảng production.product_audits bất cứ khi nào một bản ghi được chèn vào hoặc xóa khỏi bảng production.products. Dữ liệu để chèn vào bảng production.product_audits được cung cấp từ bảng INSERTED và DELETED thông qua toán tử UNION ALL như sau:
+
+INSERT INTO production.product_audits
+(
+    product_id,
+    product_name,
+    brand_id,
+    category_id,
+    model_year,
+    list_price,
+    updated_at,
+    operation
+)
+SELECT
+    i.product_id,
+    product_name,
+    brand_id,
+    category_id,
+    model_year,
+    i.list_price,
+    GETDATE(),
+    'INS'
+FROM
+    inserted AS i
+UNION ALL
+SELECT
+    d.product_id,
+    product_name,
+    brand_id,
+    category_id,
+    model_year,
+    d.list_price,
+    getdate(),
+    'DEL'
+FROM
+    deleted AS d;
+Copy
+Sau đây câu lệnh tạo trigger hoàn chỉnh:
+
+
+CREATE TRIGGER production.trg_product_audit
+ON production.products
+AFTER INSERT, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO production.product_audits(
+        product_id, 
+        product_name,
+        brand_id,
+        category_id,
+        model_year,
+        list_price, 
+        updated_at, 
+        operation
+    )
+    SELECT
+        i.product_id,
+        product_name,
+        brand_id,
+        category_id,
+        model_year,
+        i.list_price,
+        GETDATE(),
+        'INS'
+    FROM
+        inserted i
+    UNION ALL
+    SELECT
+        d.product_id,
+        product_name,
+        brand_id,
+        category_id,
+        model_year,
+        d.list_price,
+        GETDATE(),
+        'DEL'
+    FROM
+        deleted d;
+END
+Copy
+Cuối cùng, bạn thực thi câu lệnh trên để tạo trigger. Khi trigger được tạo, bạn có thể tìm thấy nó trong thư mục Triggers của bảng như trong hình sau:
+
+Tạo trigger DML trong SQL Server
+Kiểm tra hoạt động của trigger trong SQL Server </br>
+Câu lệnh sau đây chèn một bản ghi mới vào bảng production.products:
+```
+INSERT INTO production.products
+(
+    product_name, 
+    brand_id, 
+    category_id, 
+    model_year, 
+    list_price
+)
+VALUES 
+(
+    'Test product',
+    1,
+    1,
+    2018,
+    599
+);
+```
+![image](https://user-images.githubusercontent.com/92925089/206691374-475faf79-6ca8-4c3b-b60f-20d886f810b4.png)
+![image](https://user-images.githubusercontent.com/92925089/206691422-cd470d0d-01dd-4f82-9e5f-8e44b62b1468.png)
+
+
